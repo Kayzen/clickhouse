@@ -37,7 +37,7 @@ module Clickhouse
     private
 
       def client
-        @client ||= Faraday.new(:url => url)
+        @client ||= __client__
       end
 
       def __client__
