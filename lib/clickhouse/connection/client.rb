@@ -41,10 +41,8 @@ module Clickhouse
       end
 
       def __client__
-        if @config[:cert]
-          Faraday.new(:url => url, ssl_options) do
-            faraday.adapter = Faraday::Adapter::NetHttpPersistent
-          end
+        if @config[:ssl]
+          Faraday.new(:url => url, ssl: ssl_options) 
         else
           Faraday.new(:url => url)
         end
@@ -52,8 +50,23 @@ module Clickhouse
 
       def ssl_options
        {
-          cert: OpenSSL::X509::Certificate.new(File.read('/Users/app-it-2015-091/datalift-management/cacert.pem')),
+          ca_file: ca_cert_filepath
         }
+      end
+
+      def ca_cert_filepath
+        if @config.fetch(:ssl, {})[:ca_certfile]
+          @config.fetch(:ssl, {})[:ca_certfile]
+        else
+          ca_cert_tempfile_path
+        end
+      end
+
+      def ca_cert_tempfile_path
+        tempfile = Tempfile.new(["ca_certfile_#{Time.current.to_i}", '.pem'])
+        tempfile.write(@config[:ssl][:ca_cert])
+        tempfile.rewind
+        tempfile.path
       end
 
       def ensure_authentication
