@@ -40,6 +40,22 @@ module Clickhouse
         @client ||= Faraday.new(:url => url)
       end
 
+      def __client__
+        if @config[:cert]
+          Faraday.new(:url => url, ssl_options) do
+            faraday.adapter = Faraday::Adapter::NetHttpPersistent
+          end
+        else
+          Faraday.new(:url => url)
+        end
+      end
+
+      def ssl_options
+       {
+          cert: OpenSSL::X509::Certificate.new(File.read('/Users/app-it-2015-091/datalift-management/cacert.pem')),
+        }
+      end
+
       def ensure_authentication
         username, password = @config.values_at(:username, :password)
         client.basic_auth(username || "default", password) if username || password
