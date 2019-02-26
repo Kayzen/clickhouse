@@ -9,7 +9,7 @@ module Clickhouse
 
       def ping!
         ensure_authentication
-        status = client.get("/").status
+        status = client.post('', 'select 1').status
         if status != 200
           raise ConnectionError, "Unexpected response status: #{status}"
         end
@@ -42,7 +42,7 @@ module Clickhouse
 
       def __client__
         if @config[:ssl]
-          Faraday.new(:url => url, ssl: ssl_options) 
+          Faraday.new(:url => url, ssl: ssl_options)
         else
           Faraday.new(:url => url)
         end
